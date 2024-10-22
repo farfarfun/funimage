@@ -1,0 +1,7 @@
+version = 1
+requires-python = ">=3.9"
+
+[[package]]
+name = "funimage"
+version = "1.0.2"
+source = { virtual = "." }
