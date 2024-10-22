@@ -1,6 +1,5 @@
-# coding:utf8
-
 import base64
+import logging
 import os
 from enum import Enum
 from io import BytesIO
@@ -12,11 +11,16 @@ import PIL.ImageOps
 import numpy as np
 import requests
 
+logger = logging.getLogger("funimage")
 try:
     import pillow_avif
-except Exception as e:
-    os.system("pip install pillow-avif-plugin")
-    import pillow_avif
+except Exception as error:
+    logger.error(error)
+    try:
+        os.system("pip install pillow-avif-plugin")
+        import pillow_avif
+    except Exception as error:
+        logger.error(error)
 
 
 class ImageType(Enum):
@@ -34,16 +38,19 @@ class ImageType(Enum):
 
 
 def convert_url_to_bytes(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
+    }
     try:
-        return requests.get(url).content
+        return requests.get(url, headers=headers).content
     except Exception as e:
-        print(e)
+        logger.error(e)
     try:
         import urllib.request
 
         return urllib.request.urlopen(url).read()
     except Exception as e:
-        print(e)
+        logger.error(e)
 
 
 def parse_image_type(image, image_type=None, *args, **kwargs) -> ImageType:
@@ -95,15 +102,11 @@ def convert_to_bytes(image, image_type=None, *args, **kwargs):
         import cv2
 
         return cv2.imencode(".jpg", image)[1]
-    raise ValueError(
-        "Image should be a URL linking to an image, a local path, or a PIL image."
-    )
+    raise ValueError("Image should be a URL linking to an image, a local path, or a PIL image.")
 
 
 def convert_to_file(image, image_path, image_type=None, *args, **kwargs):
-    return open(image_path, "wb").write(
-        convert_to_bytes(image, image_type, *args, **kwargs)
-    )
+    return open(image_path, "wb").write(convert_to_bytes(image, image_type, *args, **kwargs))
 
 
 def convert_to_cvimg(image, image_type=None, *args, **kwargs):
@@ -118,16 +121,12 @@ def convert_to_cvimg(image, image_type=None, *args, **kwargs):
     try:
         import cv2
 
-        res = cv2.imdecode(
-            np.frombuffer(convert_to_bytes(image), np.uint8), cv2.IMREAD_COLOR
-        )
+        res = cv2.imdecode(np.frombuffer(convert_to_bytes(image), np.uint8), cv2.IMREAD_COLOR)
         assert res is not None
         return res
     except Exception as e:
         PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
-        return np.asarray(
-            PIL.Image.open(BytesIO(convert_to_bytes(image))).convert("RGB")
-        )
+        return np.asarray(PIL.Image.open(BytesIO(convert_to_bytes(image))).convert("RGB"))
 
 
 def convert_to_pilimg(image, image_type=None, *args, **kwargs):
@@ -141,9 +140,7 @@ def convert_to_pilimg(image, image_type=None, *args, **kwargs):
     if image_type in (ImageType.NDARRAY, ImageType.CV):
         return PIL.ImageOps.exif_transpose(PIL.Image.fromarray(image)).convert("RGB")
     PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
-    return PIL.ImageOps.exif_transpose(
-        PIL.Image.open(BytesIO(convert_to_bytes(image)))
-    ).convert("RGB")
+    return PIL.ImageOps.exif_transpose(PIL.Image.open(BytesIO(convert_to_bytes(image)))).convert("RGB")
 
 
 def convert_to_byte_io(image, image_type=None, *args, **kwargs):
