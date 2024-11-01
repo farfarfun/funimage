@@ -1,7 +1,7 @@
 [project]
 name = "funimage"
-version = "1.0.6"
+version = "1.0.7"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = [ "pillow-avif-plugin>=1.4.6", "pillow>=11.0.0",]
+dependencies = [ "funutil>=1.0.14", "pillow-avif-plugin>=1.4.6", "pillow>=11.0.0",]

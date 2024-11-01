@@ -1,26 +1,21 @@
 import base64
-import logging
 import os
 from enum import Enum
 from io import BytesIO
 
+import funutil
+import numpy as np
 import PIL
 import PIL.Image
 import PIL.ImageFile
 import PIL.ImageOps
-import numpy as np
+import pillow_avif
 import requests
 
-logger = logging.getLogger("funimage")
-try:
-    import pillow_avif
-except Exception as error:
-    logger.error(error)
-    try:
-        os.system("pip install pillow-avif-plugin")
-        import pillow_avif
-    except Exception as error:
-        logger.error(error)
+logger = funutil.getLogger("funimage")
+
+
+logger.info(f"pillow_avif={pillow_avif.__version__}")
 
 
 class ImageType(Enum):
@@ -125,6 +120,7 @@ def convert_to_cvimg(image, image_type=None, *args, **kwargs):
         assert res is not None
         return res
     except Exception as e:
+        logger.error(f"error:{e}")
         PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
         return np.asarray(PIL.Image.open(BytesIO(convert_to_bytes(image))).convert("RGB"))
 

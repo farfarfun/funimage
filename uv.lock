@@ -3,17 +3,28 @@ requires-python = ">=3.9"
 
 [[package]]
 name = "funimage"
-version = "1.0.6"
+version = "1.0.7"
 source = { virtual = "." }
 dependencies = [
+    { name = "funutil" },
     { name = "pillow" },
     { name = "pillow-avif-plugin" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "funutil", specifier = ">=1.0.14" },
     { name = "pillow", specifier = ">=11.0.0" },
     { name = "pillow-avif-plugin", specifier = ">=1.4.6" },
+]
+
+[[package]]
+name = "funutil"
+version = "1.0.14"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/66/cc/1be3f7580296a1adb907b3ffaa9468259fdfdb20bdcc4613aeb1225c9039/funutil-1.0.14.tar.gz", hash = "sha256:df7453d211c9ec0a85a09a83b3a023bb91513dfc0caa72c0a1c8227a5110b68c", size = 17524 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0d/85/9232ea4f633b598a4d17ee7b20e700efda3a3ab190e3903b0c8594f708b9/funutil-1.0.14-py3-none-any.whl", hash = "sha256:9dc7a485611721754e44ea982da3170c8b53bce0cf8b0e77f3117cd0bd238727", size = 21601 },
 ]
 
 [[package]]
