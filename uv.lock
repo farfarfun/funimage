@@ -3,7 +3,7 @@ requires-python = ">=3.9"
 
 [[package]]
 name = "funimage"
-version = "1.0.7"
+version = "1.0.8"
 source = { virtual = "." }
 dependencies = [
     { name = "funutil" },

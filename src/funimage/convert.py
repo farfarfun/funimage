@@ -106,7 +106,7 @@ def convert_to_file(image, image_path, image_type=None, *args, **kwargs):
 
 def convert_to_cvimg(image, image_type=None, *args, **kwargs):
     image_type = parse_image_type(image, image_type, *args, **kwargs)
-    if image_type in ImageType.PIL:
+    if image_type == ImageType.PIL:
         return np.asarray(image)
     if image_type == ImageType.NDARRAY:
         return image
