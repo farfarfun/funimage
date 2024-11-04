@@ -11,11 +11,12 @@ import PIL.ImageFile
 import PIL.ImageOps
 import pillow_avif
 import requests
+from funfake.headers import Headers
 
 logger = funutil.getLogger("funimage")
 
-
 logger.info(f"pillow_avif={pillow_avif.__version__}")
+header = Headers()
 
 
 class ImageType(Enum):
@@ -33,9 +34,7 @@ class ImageType(Enum):
 
 
 def convert_url_to_bytes(url):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
-    }
+    headers = header.generate()
     try:
         return requests.get(url, headers=headers).content
     except Exception as e:

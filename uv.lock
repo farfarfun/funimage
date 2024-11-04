@@ -2,10 +2,20 @@ version = 1
 requires-python = ">=3.9"
 
 [[package]]
+name = "funfake"
+version = "1.0.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/38/66/cc442b881e8f64190510c63460dc57aa3ed24affa0fce7fa467c6f03b9fe/funfake-1.0.3.tar.gz", hash = "sha256:e6cd40445406f2a8203798e64d24de119dd6a8e9c32622fea47121b540f58c94", size = 10500 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3f/08/8b74aa1789c530fd934997b3674d80c2111aab99365077a56a82bf6c0ad6/funfake-1.0.3-py3-none-any.whl", hash = "sha256:36138ae61b68578b08db993ee7d3da212e6b8b5e0d86fc69e32a60f7d93970f8", size = 11381 },
+]
+
+[[package]]
 name = "funimage"
-version = "1.0.8"
+version = "1.0.9"
 source = { virtual = "." }
 dependencies = [
+    { name = "funfake" },
     { name = "funutil" },
     { name = "pillow" },
     { name = "pillow-avif-plugin" },
@@ -13,6 +23,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "funfake", specifier = ">=1.0.3" },
     { name = "funutil", specifier = ">=1.0.14" },
     { name = "pillow", specifier = ">=11.0.0" },
     { name = "pillow-avif-plugin", specifier = ">=1.4.6" },
