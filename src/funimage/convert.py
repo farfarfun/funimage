@@ -96,11 +96,15 @@ def convert_to_bytes(image, image_type=None, *args, **kwargs):
         import cv2
 
         return cv2.imencode(".jpg", image)[1]
-    raise ValueError("Image should be a URL linking to an image, a local path, or a PIL image.")
+    raise ValueError(
+        "Image should be a URL linking to an image, a local path, or a PIL image."
+    )
 
 
 def convert_to_file(image, image_path, image_type=None, *args, **kwargs):
-    return open(image_path, "wb").write(convert_to_bytes(image, image_type, *args, **kwargs))
+    return open(image_path, "wb").write(
+        convert_to_bytes(image, image_type, *args, **kwargs)
+    )
 
 
 def convert_to_cvimg(image, image_type=None, *args, **kwargs):
@@ -115,13 +119,17 @@ def convert_to_cvimg(image, image_type=None, *args, **kwargs):
     try:
         import cv2
 
-        res = cv2.imdecode(np.frombuffer(convert_to_bytes(image), np.uint8), cv2.IMREAD_COLOR)
+        res = cv2.imdecode(
+            np.frombuffer(convert_to_bytes(image), np.uint8), cv2.IMREAD_COLOR
+        )
         assert res is not None
         return res
     except Exception as e:
         logger.error(f"error:{e}")
         PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
-        return np.asarray(PIL.Image.open(BytesIO(convert_to_bytes(image))).convert("RGB"))
+        return np.asarray(
+            PIL.Image.open(BytesIO(convert_to_bytes(image))).convert("RGB")
+        )
 
 
 def convert_to_pilimg(image, image_type=None, *args, **kwargs):
@@ -135,7 +143,9 @@ def convert_to_pilimg(image, image_type=None, *args, **kwargs):
     if image_type in (ImageType.NDARRAY, ImageType.CV):
         return PIL.ImageOps.exif_transpose(PIL.Image.fromarray(image)).convert("RGB")
     PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
-    return PIL.ImageOps.exif_transpose(PIL.Image.open(BytesIO(convert_to_bytes(image)))).convert("RGB")
+    return PIL.ImageOps.exif_transpose(
+        PIL.Image.open(BytesIO(convert_to_bytes(image)))
+    ).convert("RGB")
 
 
 def convert_to_byte_io(image, image_type=None, *args, **kwargs):
