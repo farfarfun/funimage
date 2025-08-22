@@ -3,8 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/funimage.svg)](https://badge.fury.io/py/funimage)
 [![Python Support](https://img.shields.io/pypi/pyversions/funimage.svg)](https://pypi.org/project/funimage/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://github.com/farfarfun/funimage/workflows/Tests/badge.svg)](https://github.com/farfarfun/funimage/actions)
-[![Code Quality](https://github.com/farfarfun/funimage/workflows/Code%20Quality/badge.svg)](https://github.com/farfarfun/funimage/actions)
+
 
 一个强大的 Python 图像格式转换和处理库。FunImage 提供了 PIL 图像、OpenCV 数组、字节、base64、URL 和文件路径之间的无缝转换功能。
 
