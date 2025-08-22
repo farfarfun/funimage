@@ -1,7 +1,10 @@
+"""Image conversion utilities for various formats and types."""
+
 import base64
 import os
 from enum import Enum
 from io import BytesIO
+from typing import Any, Optional, Union
 
 import funutil
 import numpy as np
@@ -20,34 +23,62 @@ header = Headers()
 
 
 class ImageType(Enum):
+    """Enumeration of supported image input types."""
+
     UNKNOWN = 100000
-    CV = 100010
-    OSS = 100020
-    URL = 100030
-    PIL = 100040
-    FILE = 100050
-    BYTES = 100060
-    BASE64 = 100070
-    BASE64_STR = 100071
-    NDARRAY = 100080
-    BYTESIO = 100090
+    CV = 100010  # OpenCV image
+    OSS = 100020  # OSS path (Object Storage Service)
+    URL = 100030  # HTTP/HTTPS URL
+    PIL = 100040  # PIL Image object
+    FILE = 100050  # Local file path
+    BYTES = 100060  # Raw bytes
+    BASE64 = 100070  # Base64 encoded bytes
+    BASE64_STR = 100071  # Base64 encoded string
+    NDARRAY = 100080  # NumPy array
+    BYTESIO = 100090  # BytesIO object
 
 
-def convert_url_to_bytes(url):
+def convert_url_to_bytes(url: str) -> Optional[bytes]:
+    """Convert URL to bytes by downloading the image.
+
+    Args:
+        url: HTTP/HTTPS URL to download
+
+    Returns:
+        Image bytes or None if download fails
+    """
     headers = header.generate()
     try:
-        return requests.get(url, headers=headers).content
+        response = requests.get(url, headers=headers, timeout=30)
+        response.raise_for_status()
+        return response.content
     except Exception as e:
-        logger.error(e)
+        logger.error(f"Failed to download from {url} with requests: {e}")
+
     try:
         import urllib.request
 
-        return urllib.request.urlopen(url).read()
+        return urllib.request.urlopen(url, timeout=30).read()
     except Exception as e:
-        logger.error(e)
+        logger.error(f"Failed to download from {url} with urllib: {e}")
+        return None
 
 
-def parse_image_type(image, image_type=None, *args, **kwargs) -> ImageType:
+def parse_image_type(
+    image: Any, image_type: Optional[ImageType] = None, *args, **kwargs
+) -> ImageType:
+    """Parse and determine the type of input image.
+
+    Args:
+        image: Input image in various formats
+        image_type: Explicit image type override
+
+    Returns:
+        Detected or specified ImageType
+
+    Raises:
+        ValueError: If image_type is not an ImageType enum
+    """
     if image_type is not None:
         if not isinstance(image_type, ImageType):
             raise ValueError("image_type should be an ImageType Enum.")
@@ -72,7 +103,21 @@ def parse_image_type(image, image_type=None, *args, **kwargs) -> ImageType:
         return ImageType.UNKNOWN
 
 
-def convert_to_bytes(image, image_type=None, *args, **kwargs):
+def convert_to_bytes(
+    image: Any, image_type: Optional[ImageType] = None, *args, **kwargs
+) -> bytes:
+    """Convert various image formats to bytes.
+
+    Args:
+        image: Input image in various formats
+        image_type: Explicit image type override
+
+    Returns:
+        Image as bytes
+
+    Raises:
+        ValueError: If image format is not supported
+    """
     image_type = parse_image_type(image, image_type, *args, **kwargs)
     if image_type == ImageType.URL:
         return convert_url_to_bytes(image)
@@ -97,17 +142,41 @@ def convert_to_bytes(image, image_type=None, *args, **kwargs):
 
         return cv2.imencode(".jpg", image)[1]
     raise ValueError(
-        "Image should be a URL linking to an image, a local path, or a PIL image."
+        f"Unsupported image type: {image_type}. "
+        "Image should be a URL, local path, PIL image, bytes, or numpy array."
     )
 
 
-def convert_to_file(image, image_path, image_type=None, *args, **kwargs):
-    return open(image_path, "wb").write(
-        convert_to_bytes(image, image_type, *args, **kwargs)
-    )
+def convert_to_file(
+    image: Any, image_path: str, image_type: Optional[ImageType] = None, *args, **kwargs
+) -> int:
+    """Convert image to file and save to disk.
+
+    Args:
+        image: Input image in various formats
+        image_path: Output file path
+        image_type: Explicit image type override
+
+    Returns:
+        Number of bytes written
+    """
+    image_bytes = convert_to_bytes(image, image_type, *args, **kwargs)
+    with open(image_path, "wb") as f:
+        return f.write(image_bytes)
 
 
-def convert_to_cvimg(image, image_type=None, *args, **kwargs):
+def convert_to_cvimg(
+    image: Any, image_type: Optional[ImageType] = None, *args, **kwargs
+) -> np.ndarray:
+    """Convert image to OpenCV format (numpy array).
+
+    Args:
+        image: Input image in various formats
+        image_type: Explicit image type override
+
+    Returns:
+        Image as numpy array in BGR format
+    """
     image_type = parse_image_type(image, image_type, *args, **kwargs)
     if image_type == ImageType.PIL:
         return np.asarray(image)
@@ -132,7 +201,18 @@ def convert_to_cvimg(image, image_type=None, *args, **kwargs):
         )
 
 
-def convert_to_pilimg(image, image_type=None, *args, **kwargs):
+def convert_to_pilimg(
+    image: Any, image_type: Optional[ImageType] = None, *args, **kwargs
+) -> PIL.Image.Image:
+    """Convert image to PIL Image format.
+
+    Args:
+        image: Input image in various formats
+        image_type: Explicit image type override
+
+    Returns:
+        PIL Image object in RGB format
+    """
     image_type = parse_image_type(image, image_type, *args, **kwargs)
     if image_type == ImageType.URL:
         return PIL.Image.open(requests.get(image, stream=True).raw).convert("RGB")
@@ -148,16 +228,49 @@ def convert_to_pilimg(image, image_type=None, *args, **kwargs):
     ).convert("RGB")
 
 
-def convert_to_byte_io(image, image_type=None, *args, **kwargs):
+def convert_to_byte_io(
+    image: Any, image_type: Optional[ImageType] = None, *args, **kwargs
+) -> BytesIO:
+    """Convert image to BytesIO object.
+
+    Args:
+        image: Input image in various formats
+        image_type: Explicit image type override
+
+    Returns:
+        BytesIO object containing image bytes
+    """
     return BytesIO(convert_to_bytes(image, image_type, *args, **kwargs))
 
 
-def convert_to_base64(image, image_type=None, *args, **kwargs):
+def convert_to_base64(
+    image: Any, image_type: Optional[ImageType] = None, *args, **kwargs
+) -> bytes:
+    """Convert image to base64 encoded bytes.
+
+    Args:
+        image: Input image in various formats
+        image_type: Explicit image type override
+
+    Returns:
+        Base64 encoded bytes
+    """
     return base64.b64encode(convert_to_bytes(image, image_type, *args, **kwargs))
 
 
-def convert_to_base64_str(image, image_type=None, *args, **kwargs):
+def convert_to_base64_str(
+    image: Any, image_type: Optional[ImageType] = None, *args, **kwargs
+) -> str:
+    """Convert image to base64 encoded string.
+
+    Args:
+        image: Input image in various formats
+        image_type: Explicit image type override
+
+    Returns:
+        Base64 encoded string
+    """
     image_type = parse_image_type(image, image_type, *args, **kwargs)
     if image_type == ImageType.BASE64_STR:
         return image
-    return str(convert_to_base64(image, image_type), encoding="utf-8")
+    return convert_to_base64(image, image_type, *args, **kwargs).decode("utf-8")
