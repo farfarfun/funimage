@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "funimage"
-version = "1.0.15"
+version = "1.0.16"
 description = "A powerful Python library for image format conversion and processing"
 readme = "README.md"
 requires-python = ">=3.8"
 keywords = [ "image", "conversion", "PIL", "opencv", "base64", "processing",]
 classifiers = [ "Development Status :: 5 - Production/Stable", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.8", "Programming Language :: Python :: 3.9", "Programming Language :: Python :: 3.10", "Programming Language :: Python :: 3.11", "Programming Language :: Python :: 3.12", "Topic :: Software Development :: Libraries :: Python Modules", "Topic :: Multimedia :: Graphics",]
-dependencies = [ "funfake>=1.0.3", "funutil>=1.0.14", "pillow>=9.0.0", "pillow-avif-plugin>=1.4.6", "numpy>=1.20.0", "requests>=2.25.0",]
+dependencies = [ "funfake>=1.0.3", "funutil>=1.0.14", "pillow>=9.0.0", "pillow-avif-plugin>=1.4.6", "numpy>=1.20.0", "requests>=2.25.0", "opencv-python>=4.0",]
 [[project.authors]]
 name = "牛哥"
 email = "niuliangtao@qq.com"
