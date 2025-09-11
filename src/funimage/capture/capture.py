@@ -39,7 +39,7 @@ class VideoCaptureQueue:
         self.cap.release()
 
 
-def test():
+def example():
     import cv2
 
     # 测试自定义VideoCapture类
