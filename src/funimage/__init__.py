@@ -13,7 +13,9 @@ from .convert import (
     parse_image_type,
 )
 
-__version__ = "1.0.13"
+from importlib.metadata import version as _version
+
+__version__ = _version("funimage")
 __author__ = "farfarfun"
 __email__ = "farfarfun@qq.com"
 
