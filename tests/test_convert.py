@@ -4,7 +4,7 @@ import base64
 import os
 import tempfile
 from io import BytesIO
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import numpy as np
 import PIL.Image
@@ -124,6 +124,28 @@ class TestConvertToPilImg:
         assert isinstance(result, PIL.Image.Image)
         assert result.mode == "RGB"  # Should be converted to RGB
 
+    @patch("funimage.convert.convert_url_to_bytes", return_value=None)
+    def test_url_download_failure(self, mock_download):
+        with pytest.raises(ValueError, match="Failed to download image"):
+            convert_to_pilimg("https://example.com/missing.jpg")
+        mock_download.assert_called_once()
+
+
+class TestConvertToCvImg:
+    def test_convert_pil_image(self):
+        image = PIL.Image.new("RGB", (2, 3), color="red")
+        result = convert_to_cvimg(image)
+        assert result.shape == (3, 2, 3)
+        assert result[0, 0].tolist() == [255, 0, 0]
+
+    def test_numpy_array_passthrough(self):
+        image = np.zeros((2, 3, 3), dtype=np.uint8)
+        assert convert_to_cvimg(image) is image
+
+    def test_unsupported_input(self):
+        with pytest.raises(ValueError, match="Unsupported image type"):
+            convert_to_cvimg(object())
+
 
 class TestConvertToFile:
     """Test conversion to file."""
@@ -180,39 +202,29 @@ class TestConvertToByteIO:
 class TestUrlToBytes:
     """Test URL download functionality."""
 
-    @patch("requests.get")
-    def test_successful_download(self, mock_get):
+    @patch("funimage.convert.simple_download")
+    def test_successful_download(self, mock_download):
         """Test successful URL download."""
-        mock_response = Mock()
-        mock_response.content = b"fake image data"
-        mock_response.raise_for_status.return_value = None
-        mock_get.return_value = mock_response
+
+        def download(url, filepath, **kwargs):
+            with open(filepath, "wb") as file:
+                file.write(b"fake image data")
+            return True
+
+        mock_download.side_effect = download
 
         result = convert_url_to_bytes("https://example.com/image.jpg")
         assert result == b"fake image data"
+        _, filepath = mock_download.call_args.args
+        assert not os.path.exists(filepath)
+        assert mock_download.call_args.kwargs["overwrite"] is True
+        assert mock_download.call_args.kwargs["timeout"] == 30
 
-    @patch("requests.get")
-    @patch("urllib.request.urlopen")
-    def test_fallback_to_urllib(self, mock_urlopen, mock_get):
-        """Test fallback to urllib when requests fails."""
-        mock_get.side_effect = Exception("Request failed")
-
-        mock_urllib_response = Mock()
-        mock_urllib_response.read.return_value = b"urllib image data"
-        mock_urlopen.return_value = mock_urllib_response
-
-        result = convert_url_to_bytes("https://example.com/image.jpg")
-        assert result == b"urllib image data"
-
-    @patch("requests.get")
-    @patch("urllib.request.urlopen")
-    def test_both_methods_fail(self, mock_urlopen, mock_get):
-        """Test when both download methods fail."""
-        mock_get.side_effect = Exception("Request failed")
-        mock_urlopen.side_effect = Exception("Urllib failed")
-
+    @patch("funimage.convert.simple_download", return_value=False)
+    def test_download_failure(self, mock_download):
         result = convert_url_to_bytes("https://example.com/image.jpg")
         assert result is None
+        mock_download.assert_called_once()
 
 
 if __name__ == "__main__":

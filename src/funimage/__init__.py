@@ -1,4 +1,6 @@
-"""FunImage - A powerful Python library for image format conversion and processing."""
+"""FunImage 提供 PIL、OpenCV、字节、Base64、URL 和文件之间的图像转换。"""
+
+from importlib.metadata import version as _version
 
 from .convert import (
     ImageType,
@@ -13,14 +15,12 @@ from .convert import (
     parse_image_type,
 )
 
-from importlib.metadata import version as _version
-
 __version__ = _version("funimage")
 __author__ = "farfarfun"
 __email__ = "farfarfun@qq.com"
 
 __all__ = [
-    # Core conversion functions
+    "ImageType",
     "convert_to_base64",
     "convert_to_base64_str",
     "convert_to_byte_io",
@@ -29,8 +29,5 @@ __all__ = [
     "convert_to_file",
     "convert_to_pilimg",
     "convert_url_to_bytes",
-    # Utility functions
     "parse_image_type",
-    # Enums
-    "ImageType",
 ]

@@ -33,11 +33,6 @@ pip install funimage
 pip install funimage[opencv]
 ```
 
-开发环境 For development:
-```bash
-pip install funimage[dev]
-```
-
 ## 快速开始 Quick Start
 
 ```python
@@ -249,10 +244,10 @@ def upload_image_to_api(image_path):
 
 ## 依赖要求 Requirements
 
-- Python >= 3.8
+- Python >= 3.12
 - PIL/Pillow >= 9.0.0
 - NumPy >= 1.20.0
-- Requests >= 2.25.0
+- FunGet >= 1.1.63
 
 ## 贡献 Contributing
 
@@ -264,16 +259,19 @@ def upload_image_to_api(image_path):
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 许可证 License
-
-本项目基于 MIT 许可证 - 详情请查看 [LICENSE](LICENSE) 文件。This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 更新日志 Changelog
-
-### v1.0.13
-- 添加完整的类型提示 Added comprehensive type hints
-- 改进错误处理和日志记录 Improved error handling and logging
-
 ## 支持 Support
 
 如果您遇到任何问题或有疑问，请在 GitHub 上 [提交 issue](https://github.com/farfarfun/funimage/issues)。If you encounter any issues or have questions, please [open an issue](https://github.com/farfarfun/funimage/issues) on GitHub.
+
+---
+
+## 关于 farfarfun
+
+[farfarfun](https://github.com/farfarfun) 是一个专注于实用工具库的开源组织，
+涵盖云存储、数据处理、AI、多媒体与开发工具链等方向。
+
+- 🏠 组织主页：<https://github.com/farfarfun>
+- 📦 PyPI：<https://pypi.org/user/niuliangtao/>
+- 📧 联系：farfarfun@qq.com
+
+本项目基于 [MIT](LICENSE) 协议开源。
