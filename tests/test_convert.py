@@ -1,4 +1,4 @@
-"""Tests for funimage conversion functions."""
+"""测试 funimage 的图像转换函数。"""
 
 import base64
 import os
@@ -69,7 +69,7 @@ class TestParseImageType:
 
 
 class TestConvertToBytes:
-    """Test conversion to bytes."""
+    """测试转换为字节。"""
 
     def test_convert_pil_to_bytes(self):
         """Test PIL image to bytes conversion."""
@@ -85,11 +85,19 @@ class TestConvertToBytes:
         assert result == data
 
     def test_convert_base64_to_bytes(self):
-        """Test base64 to bytes conversion."""
+        """测试 Base64 转字节。"""
         original = b"test data"
         b64_data = base64.b64encode(original)
         result = convert_to_bytes(b64_data, ImageType.BASE64)
         assert result == original
+
+    def test_convert_base64_string_to_bytes(self):
+        """测试 Base64 字符串转字节。"""
+        assert convert_to_bytes("dGVzdCBkYXRh") == b"test data"
+
+    def test_convert_bytesio_to_bytes(self):
+        """测试 BytesIO 转字节。"""
+        assert convert_to_bytes(BytesIO(b"test data")) == b"test data"
 
     @patch("funimage.convert.convert_url_to_bytes")
     def test_convert_url_to_bytes(self, mock_url_convert):

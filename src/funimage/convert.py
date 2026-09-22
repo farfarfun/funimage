@@ -141,7 +141,11 @@ def convert_to_bytes(
             return file.read()
     if image_type == ImageType.BYTES:
         return image
+    if image_type == ImageType.BYTESIO:
+        return image.getvalue()
     if image_type == ImageType.BASE64:
+        return base64.b64decode(image)
+    if image_type == ImageType.BASE64_STR:
         return base64.b64decode(image)
     if image_type == ImageType.PIL:
         image_data = BytesIO()
@@ -221,7 +225,7 @@ def convert_to_cvimg(
         assert res is not None
         return res
     except Exception as exc:  # noqa: BLE001 - OpenCV 解码失败时回退到 Pillow
-        logger.error(f"error:{exc}")
+        logger.error("OpenCV 解码图像失败，输入类型为 %s：%s", image_type, exc)
         PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
         return np.asarray(
             PIL.Image.open(BytesIO(convert_to_bytes(image))).convert("RGB")
