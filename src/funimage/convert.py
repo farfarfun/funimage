@@ -6,6 +6,7 @@ import tempfile
 from enum import Enum
 from io import BytesIO
 from typing import Any
+from urllib.parse import urlsplit
 
 import numpy as np
 import PIL
@@ -38,6 +39,28 @@ class ImageType(Enum):
     BYTESIO = 100090  # BytesIO 对象
 
 
+def _mask_url(url: str) -> str:
+    """脱敏 URL，仅保留 scheme/host(:port)/path，丢弃 userinfo、query 与 fragment。
+
+    URL 的 query 参数（如 token、签名）以及 `user:pass@host` 形式的 userinfo
+    都可能携带凭据信息，日志中不应完整记录原始 URL。
+
+    Args:
+        url: 待脱敏的原始 URL。
+
+    Returns:
+        仅包含 scheme、host(:port)、path 的 URL；解析失败时原样返回。
+    """
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return url
+    netloc = parts.hostname or ""
+    if parts.port:
+        netloc = f"{netloc}:{parts.port}"
+    return f"{parts.scheme}://{netloc}{parts.path}"
+
+
 def convert_url_to_bytes(url: str) -> bytes | None:
     """下载 URL 指向的图像并返回字节。
 
@@ -60,9 +83,9 @@ def convert_url_to_bytes(url: str) -> bytes | None:
                 with open(filepath, "rb") as file:
                     return file.read()
     except OSError as exc:
-        logger.error(f"Failed to read downloaded image from {url}: {exc}")
+        logger.error(f"Failed to read downloaded image from {_mask_url(url)}: {exc}")
         return None
-    logger.error(f"Failed to download image from {url}")
+    logger.error(f"Failed to download image from {_mask_url(url)}")
     return None
 
 
@@ -216,20 +239,28 @@ def convert_to_cvimg(
     if image_type == ImageType.CV:
         return image
 
+    # 先完成一次字节转换（可能涉及下载/文件 I/O 等有副作用的操作），
+    # 后续 OpenCV 解码失败回退到 Pillow 时复用同一份字节，避免重复触发副作用。
+    image_bytes = convert_to_bytes(image, image_type, *args, **kwargs)
+
+    cv2 = None
     try:
         import cv2
+    except ImportError as exc:
+        logger.error(f"OpenCV 未安装，无法用于解码图像，回退到 Pillow：{exc}")
 
-        res = cv2.imdecode(
-            np.frombuffer(convert_to_bytes(image), np.uint8), cv2.IMREAD_COLOR
-        )
-        assert res is not None
-        return res
-    except Exception as exc:  # noqa: BLE001 - OpenCV 解码失败时回退到 Pillow
-        logger.error("OpenCV 解码图像失败，输入类型为 %s：%s", image_type, exc)
-        PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
-        return np.asarray(
-            PIL.Image.open(BytesIO(convert_to_bytes(image))).convert("RGB")
-        )
+    if cv2 is not None:
+        try:
+            res = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+        except cv2.error as exc:
+            logger.error(f"OpenCV 解码图像失败，输入类型为 {image_type}：{exc}")
+            res = None
+        if res is not None:
+            return res
+        logger.error(f"OpenCV 未能解码图像，输入类型为 {image_type}，回退到 Pillow")
+
+    PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
+    return np.asarray(PIL.Image.open(BytesIO(image_bytes)).convert("RGB"))
 
 
 def convert_to_pilimg(

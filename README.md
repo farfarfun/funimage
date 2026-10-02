@@ -35,11 +35,15 @@ pip install funimage[opencv]
 
 ## 快速开始 Quick Start
 
+下面示例只依赖 PIL 在本地生成的图像，无需网络即可直接运行 The example below only uses a PIL-generated local image and runs without any network access:
+
 ```python
+import PIL.Image
+
 import funimage
 
-# Convert URL to PIL Image
-pil_img = funimage.convert_to_pilimg("https://example.com/image.jpg")
+# 本地生成一张测试图片，无需网络 Generate a local test image, no network required
+pil_img = PIL.Image.new("RGB", (64, 64), color="red")
 
 # Convert PIL Image to bytes
 img_bytes = funimage.convert_to_bytes(pil_img)
@@ -48,8 +52,15 @@ img_bytes = funimage.convert_to_bytes(pil_img)
 base64_str = funimage.convert_to_base64_str(img_bytes)
 
 # Save to file
-funimage.convert_to_file("https://example.com/image.jpg", "output.jpg")
+funimage.convert_to_file(pil_img, "output.jpg")
 ```
+
+> 从 HTTP/HTTPS URL 加载图像需要目标地址真实可达；地址不可达时 `convert_to_pilimg`、
+> `convert_to_file` 等函数会抛出 `ValueError`，调用方应按具体异常类型捕获处理
+> （见下方「错误处理」）。Loading from an HTTP/HTTPS URL requires the target address to
+> be reachable; on failure, functions like `convert_to_pilimg` and `convert_to_file`
+> raise `ValueError`, which callers should catch by specific exception type (see
+> "Error Handling" below).
 
 ## 支持的输入类型 Supported Input Types
 
@@ -167,37 +178,54 @@ pil_img = funimage.convert_to_pilimg(
 
 ### 错误处理 Error Handling
 
+`funimage` 的转换函数在输入不受支持或 URL 下载失败时抛出 `ValueError`，应按具体异常类型
+捕获并以非零退出码结束，而不是用 `except Exception` 吞掉错误。
+
+`funimage`'s conversion functions raise `ValueError` when the input is unsupported or
+a URL download fails; catch that specific exception type and exit with a non-zero
+status instead of swallowing errors with `except Exception`:
+
 ```python
+import sys
+
 try:
-    pil_img = funimage.convert_to_pilimg("https://invalid-url.com/image.jpg")
-except Exception as e:
-    print(f"Conversion failed: {e}")
+    pil_img = funimage.convert_to_pilimg("https://invalid-url.example/image.jpg")
+except ValueError as exc:
+    sys.exit(f"图像转换失败：{exc}")
 ```
 
 ### 批量处理 Batch Processing
 
 ```python
-urls = [
-    "https://example.com/image1.jpg",
-    "https://example.com/image2.jpg", 
-    "https://example.com/image3.jpg"
+import PIL.Image
+
+images = [
+    PIL.Image.new("RGB", (32, 32), color="red"),
+    PIL.Image.new("RGB", (32, 32), color="green"),
+    PIL.Image.new("RGB", (32, 32), color="blue"),
 ]
 
-for i, url in enumerate(urls):
-    funimage.convert_to_file(url, f"image_{i}.jpg")
+for i, image in enumerate(images):
+    funimage.convert_to_file(image, f"image_{i}.jpg")
 ```
 
 ## 示例 Examples
 
 ### 网页图像抓取 Web Scraping Images
 
+该示例依赖目标网页可访问，运行前请确认网络环境 This example requires the target
+page to be reachable; make sure network access is available before running it:
+
 ```python
+from farlog import getLogger
 import requests
 from bs4 import BeautifulSoup
 import funimage
 
+logger = getLogger("funimage-example")
+
 # Scrape images from a webpage
-response = requests.get("https://example.com")
+response = requests.get("https://example.com", timeout=10)
 soup = BeautifulSoup(response.content, 'html.parser')
 
 for i, img in enumerate(soup.find_all('img')):
@@ -205,9 +233,8 @@ for i, img in enumerate(soup.find_all('img')):
     if img_url:
         try:
             funimage.convert_to_file(img_url, f"scraped_image_{i}.jpg")
-            print(f"Saved image {i}")
-        except Exception as e:
-            print(f"Failed to save image {i}: {e}")
+        except ValueError as exc:
+            logger.error("第 {} 张图片保存失败：{}", i, exc)
 ```
 
 ### 图像格式转换 Image Format Conversion
@@ -238,7 +265,7 @@ def upload_image_to_api(image_path):
         "format": "jpeg"
     }
     
-    response = requests.post("https://api.example.com/upload", json=payload)
+    response = requests.post("https://api.example.com/upload", json=payload, timeout=10)
     return response.json()
 ```
 
