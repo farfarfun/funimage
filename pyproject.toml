@@ -31,6 +31,7 @@ email = "farfarfun@qq.com"
 
 [project.optional-dependencies]
 opencv = [ "opencv-python>=4.5.0",]
+web = [ "beautifulsoup4>=4.0.0", "requests>=2.0.0",]
 
 [project.urls]
 Organization = "https://github.com/farfarfun"

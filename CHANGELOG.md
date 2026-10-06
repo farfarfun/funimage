@@ -25,7 +25,7 @@
 
 ### 变更
 
-- 构建后端迁移至 Hatchling，并提交 `uv.lock` 以保证依赖可复现。
+- 构建后端迁移至 Hatchling；`uv.lock` 不再纳入版本控制。
 - 日志改用 `farlog`，并将公开 API 的类型标注、docstring 和注释收敛为 Python 3.12 中文规范。
 
 ### 废弃

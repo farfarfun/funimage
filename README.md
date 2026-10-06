@@ -26,11 +26,22 @@ A powerful Python library for image format conversion and processing. FunImage p
 pip install funimage
 ```
 
+PyPI 当前发布的最新版本为 `1.0.19`。本仓库的 `1.0.22` 仍未发布；需要使用当前源码时，在检出仓库根目录执行：
+
+```bash
+pip install .
+```
+
 ### 可选依赖 Optional Dependencies
 
 安装 OpenCV 支持 For OpenCV support:
 ```bash
 pip install funimage[opencv]
+```
+
+安装网页抓取和 API 集成示例所需依赖 For the web scraping and API integration examples:
+```bash
+pip install funimage[web]
 ```
 
 ## 快速开始 Quick Start
@@ -178,12 +189,16 @@ pil_img = funimage.convert_to_pilimg(
 
 ### 错误处理 Error Handling
 
-`funimage` 的转换函数在输入不受支持或 URL 下载失败时抛出 `ValueError`，应按具体异常类型
-捕获并以非零退出码结束，而不是用 `except Exception` 吞掉错误。
+`convert_url_to_bytes` 在 URL 下载失败时返回 `None`。其他以 URL 为输入的公开转换函数（如
+`convert_to_pilimg`、`convert_to_bytes` 和 `convert_to_file`）会将该失败转换为 `ValueError`；
+不受支持的输入同样会抛出 `ValueError`。应按具体异常类型捕获并以非零退出码结束，而不是用
+`except Exception` 吞掉错误。
 
-`funimage`'s conversion functions raise `ValueError` when the input is unsupported or
-a URL download fails; catch that specific exception type and exit with a non-zero
-status instead of swallowing errors with `except Exception`:
+`convert_url_to_bytes` returns `None` when a URL download fails. Public conversion
+functions that accept URL input, including `convert_to_pilimg`, `convert_to_bytes`,
+and `convert_to_file`, convert that failure to `ValueError`; unsupported input also
+raises `ValueError`. Catch that specific exception type and exit with a non-zero status
+instead of swallowing errors with `except Exception`:
 
 ```python
 import sys
@@ -215,6 +230,10 @@ for i, image in enumerate(images):
 
 该示例依赖目标网页可访问，运行前请确认网络环境 This example requires the target
 page to be reachable; make sure network access is available before running it:
+
+```bash
+pip install funimage[web]
+```
 
 ```python
 from farlog import getLogger
@@ -251,6 +270,12 @@ funimage.convert_to_file("input.jpg", "output.webp")
 ```
 
 ### API 集成 API Integration
+
+该示例需要 `requests`，请先安装可选的 `web` 依赖 This example requires `requests`; install the optional `web` dependency first:
+
+```bash
+pip install funimage[web]
+```
 
 ```python
 import funimage
