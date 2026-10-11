@@ -305,11 +305,14 @@ def upload_image_to_api(image_path):
 
 欢迎贡献！请随时提交 Pull Request。Contributions are welcome! Please feel free to submit a Pull Request.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. Fork 本仓库 Fork the repository
+2. 新建特性分支 Create your feature branch (`git checkout -b feature/avif-support`)
+3. 提交改动 Commit your changes (`git commit -m 'feat: 新增 AVIF 图像转换支持'`)
+4. 推送分支 Push to the branch (`git push origin feature/avif-support`)
+5. 发起 Pull Request Open a Pull Request
+
+提交信息用中文，格式为 `<类型>: <做了什么>`，类型取 `feat`/`fix`/`docs`/`refactor`/`test`/`chore`；
+正文说明「为什么这么改」而不是复述 diff，一次提交只做一件事。
 
 ## 支持 Support
 

@@ -109,6 +109,19 @@ class TestConvertToBytes:
         assert result == b"fake image data"
         mock_url_convert.assert_called_once_with(url)
 
+    @patch("funimage.convert.convert_url_to_bytes", return_value=None)
+    def test_url_download_failure_masks_credentials(self, mock_download):
+        """测试下载失败的异常信息不会泄露 URL 中的 userinfo、query 与 fragment。"""
+        url = "https://user:pass@example.com/image.jpg?token=SECRET123#frag"
+
+        with pytest.raises(ValueError) as excinfo:
+            convert_to_bytes(url)
+
+        message = str(excinfo.value)
+        assert "https://example.com/image.jpg" in message
+        for secret in ("SECRET123", "token", "user:pass", "frag"):
+            assert secret not in message
+
 
 class TestConvertToPilImg:
     """测试转换为 PIL 图像。"""
@@ -138,6 +151,19 @@ class TestConvertToPilImg:
         with pytest.raises(ValueError, match="Failed to download image"):
             convert_to_pilimg("https://example.com/missing.jpg")
         mock_download.assert_called_once()
+
+    @patch("funimage.convert.convert_url_to_bytes", return_value=None)
+    def test_url_download_failure_masks_credentials(self, mock_download):
+        """测试下载失败的异常信息不会泄露 URL 中的 userinfo、query 与 fragment。"""
+        url = "https://user:pass@example.com/missing.jpg?sign=SECRET123#frag"
+
+        with pytest.raises(ValueError) as excinfo:
+            convert_to_pilimg(url)
+
+        message = str(excinfo.value)
+        assert "https://example.com/missing.jpg" in message
+        for secret in ("SECRET123", "sign", "user:pass", "frag"):
+            assert secret not in message
 
 
 class TestConvertToCvImg:
