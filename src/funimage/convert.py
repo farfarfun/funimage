@@ -157,7 +157,7 @@ def convert_to_bytes(
     if image_type == ImageType.URL:
         image_bytes = convert_url_to_bytes(image)
         if image_bytes is None:
-            raise ValueError(f"Failed to download image: {image}")
+            raise ValueError(f"Failed to download image: {_mask_url(image)}")
         return image_bytes
     if image_type == ImageType.FILE:
         with open(image, "rb") as file:
@@ -284,7 +284,7 @@ def convert_to_pilimg(
     if image_type == ImageType.URL:
         image_bytes = convert_url_to_bytes(image)
         if image_bytes is None:
-            raise ValueError(f"Failed to download image: {image}")
+            raise ValueError(f"Failed to download image: {_mask_url(image)}")
         return PIL.Image.open(BytesIO(image_bytes)).convert("RGB")
     if image_type == ImageType.FILE:
         return PIL.ImageOps.exif_transpose(PIL.Image.open(image)).convert("RGB")
